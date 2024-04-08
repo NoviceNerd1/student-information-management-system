@@ -11,8 +11,12 @@
 #define MAX_ROLE_LENGTH 10
 #define MAX_OPTION_LENGTH 50
 #define MAX_OPTIONS 10
+
 /// @brief Function pointer for menu options
 typedef void (*MenuOptionFunction)();
+
+/// @brief Function to go back to from the menu
+typedef void (*MenuToGoBackTo)();
 
 /// @brief Menu structure
 struct Menu {
@@ -30,6 +34,12 @@ struct Menu {
 /// @param option The option to add
 /// @param function The function to be called when the option is selected
 void add_option(struct Menu *menu, const char *option, MenuOptionFunction function);
+
+/// @brief Go back to the previous function with one line of info
+/// @param info The info to view
+/// @param user The user to take back to the menu
+/// @param function The menu function to go back to
+void go_back_with_info(char *info, struct User *user, MenuToGoBackTo function);
 
 /// @brief To display the menu
 /// @param menu The menu to be displayed
@@ -54,6 +64,8 @@ void add_info(char *info);
 void close_box();
 
 void box_info(char *info);
+
+void debug_printf(char *info);
 
 /// @brief To display the exit message
 void exit_message();

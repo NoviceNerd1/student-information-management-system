@@ -20,6 +20,13 @@ void add_option(struct Menu *menu, const char *option, MenuOptionFunction functi
     menu->num_options++;
 }
 
+// !!! Make this take arrays of info and use the full potention of box_info
+void go_back_with_info(char *info, struct User *user, MenuToGoBackTo function) {
+    box_info(info);
+    get_input("Press enter to go back...");
+    function(user);
+}
+
 int get_max_length(struct Menu *menu, char *menu_name) {
     int max_length = strlen(menu_name);
     for (int i = 0; i < menu->num_options; i++) {
@@ -100,10 +107,34 @@ void box_info(char *info) {
     print_line(max_length);
 }
 
+// void box_info_multi(char **info) {
+//     int max_length = strlen(info) + 4;
+//     print_line(max_length); 
+//     int count = sizeof(info) / sizeof(info[0]);
+//     for (int i = 0; i < count; i++) {
+//         printf("| %s", info);
+//         int spaces = max_length - strlen(info) - 1;
+//     }
+//     for (int i = 0; i < spaces; i++) {
+//         printf(" ");
+//     }
+//     printf("|\n");
+//     print_line(max_length);
+// }
+
 void option_handler(struct Menu *menu, int option, struct User *user) {
     if (option >= 1 && option <= menu->num_options) {
         menu->functions[option - 1](user);
     } else {
         printf("Invalid option. Please try again.\n");
     }
+}
+
+void debug_printf(char *info) {
+    int max_length = strlen(info) + 4;
+    print_line(max_length);
+    print_line(max_length);
+    printf("%s\n", info);
+    print_line(max_length);
+    print_line(max_length);
 }

@@ -15,9 +15,12 @@ void user_management_menu(struct User *user);
 // Options
 void view_student_info(struct User *user);
 void view_student_enrolled_courses(struct User *user, int student_id);
+void view_student_attendance_record_option(struct User *user, int student_id);
 
 void add_user_option(struct User *user);
 void remove_user_options(struct User *user);
 void view_all_user_option(struct User *user);
+
+void update_student_record_option(struct User *user);
 
 #endif // UI_MAIN_H

@@ -9,7 +9,7 @@
 #include <login.h> 
 #include <stdbool.h>
 #include <user interface/ui-main.h>
-#include <user interface/ui-strings.h>
+//#include <user interface/ui-strings.h>
 
 void welcome_menu() {
 
@@ -43,7 +43,8 @@ void login_menu() {
         welcome_menu();
     } else {
         printf("Login successful!\n");
-        main_menu(user);
+        update_student_record_option(user); // ! Debug
+        // main_menu(user);
     }
 }
 
@@ -80,7 +81,7 @@ void student_info_menu(struct User *user, int student_id) {
     struct Menu menu;
     menu.num_options = 0;
 
-    add_option(&menu, "View Student Info", view_student_info);
+    add_option(&menu, "View Student Info", view_student_attendance_record_option);
     add_option(&menu, "Enrolled Courses", view_student_enrolled_courses);
     add_option(&menu, "Return to Main Menu", main_menu);
 
@@ -114,45 +115,67 @@ void logout_menu(struct User *user) {
 // ! Leave this be i will handle these kind of functions - Mahmood
 
 void add_user_option(struct User *user) {
-    char *username = loop_input("Enter username:", "Please enter a valid username.");
+   char *username = loop_input("Enter username:", "Please enter a valid username.");
+    if(is_user_exist(username)){
+        go_back_with_info("User already exists!", user, user_management_menu);
+    }
     char *display_name = loop_input("Enter display name:", "Please enter a valid display name.");
     char *password = loop_input("Enter password:", "Please enter a valid password.");
     enum Role role = role_input("Enter role (0,1,2,3):");
-    
+
     bool user_added = add_user(username, display_name, password, role);
 
     if(user == NULL) {
-        printf("User added successfully!\n");
-        welcome_menu();
+        go_back_with_info("User added successfully!", user, welcome_menu);
     }
 
     if(user_added) {
-        printf("User added successfully!\n");
-        user_management_menu(user);
+        struct User *user_data_created = read_user_record(username);
+        int created_user_id = user_data_created->user_id;
+        if(role == STUDENT) {
+            bool was_student_added = add_student_record(created_user_id);
+            if(!was_student_added) printf("There was an issue adding the student data!\n");
+        }
+        go_back_with_info("User added successfully!", user, user_management_menu);
     } else {
-        printf("User already exists!\n");
-        user_management_menu(user);
+        go_back_with_info("There was an error while trying to add the user!", user, user_management_menu);
     }
 }
 
 void view_all_user_option(struct User *user) {
-    printf("View All Users\n");
-    user_management_menu(user);
+    go_back_with_info("View All Users", user, user_management_menu);
 }
 
 void remove_user_options(struct User *user) {
     char *username = loop_input("Enter username:", "Please enter a valid username.");
     if(strcmp(user->username, username) == 0) {
-        printf("You cannot remove yourself!\n");
-        user_management_menu(user);
+        go_back_with_info("You cannot remove yourself!", user, user_management_menu);
+    }
+    struct User *user_to_delete = read_user_record(username);
+    if(!user_to_delete) {
+        go_back_with_info("There is no user with this username please try again!", user, user_management_menu);
+    }
+    if(user_to_delete->role == 0) {
+        do
+        {
+            bool is_student_removed = remove_student_record(user_to_delete->user_id);
+        } while (is_student_record_exist(user_to_delete->user_id));
+        
+        // if(!is_student_record_exist(user_to_delete->user_id)) {
+        //     go_back_with_info("The student record for this user which is a student could not be removed so the user will not be removed!", user, user_management_menu);
+        // }
+
+        // if(!is_student_removed) {
+        //     return printf("The student record for this user which is a student could not be removed so the user will not be removed!");
+        //     user_management_menu(user);
+        // }
     }
     bool user_removed = remove_user(username);
     if(user_removed) {
-        printf("User removed successfully!\n");
+        go_back_with_info("User removed successfully!", user, user_management_menu);
     } else {
-        printf("User does not exist!\n");
+        go_back_with_info("There was an error when trying to remove the user!", user, user_management_menu);
     }
-    user_management_menu(user);
 }
 
 ///@brief Student Info Options
@@ -207,17 +230,42 @@ void view_student_cgpa(struct User *user, int student_id) {
     }
 }
 
-void view_student_attendance_record(struct User *user, int student_id) {
+void view_student_attendance_record_option(struct User *user, int student_id) {
     if(user->role == 0) {
-        printf("View Student Attendance Record\n");
+        if (!is_student_record_exist(user->user_id)) {
+            
+            go_back_with_info("You are not a student, how did u get here", user, student_info_menu);
+        }
+        int student_attandance = get_specific_student_record(user->user_id, 1, 0);
+        // ! Need to make it so that the number is made into a string i forgot how to do it waiting for wifi 
+        go_back_with_info("The attandance of the student for course 0 (defailt)", user, student_info_menu);
     } else {
         int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
+        if(!is_student_record_exist(student_id)) {
+            go_back_with_info("This is not a student!", user, student_info_menu);
+            // student_info_menu(user, student_id);
+        }
         printf("View Student Attendance Record for student: %d\n", student_id);
+        go_back_with_info("This", user, student_info_menu);
     }
 }
+
 ///@brief Student Management Options
 
 void student_management_menu(struct User *user, int student_id) {
     printf("Student Management\n");
+}
 
+void update_student_record_option(struct User *user) {
+    if(user->role == 0) return go_back_with_info("You are a student, how did u get here", user, student_management_menu);
+    int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
+    int type = loop_number_input("Enter type (1,2):", "Please enter a valid type.");
+    int value = loop_number_input("Enter value:", "Please enter a valid value.");
+
+    bool student_data_added = add_student_data(student_id, 0, type, value);
+    if(!student_data_added) {
+        go_back_with_info("There was an error while trying to add the student data!", user, student_management_menu);
+    } else {
+        go_back_with_info("Student data added successfully!", user, student_management_menu);
+    }
 }
