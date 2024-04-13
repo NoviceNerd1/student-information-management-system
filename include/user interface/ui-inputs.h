@@ -11,8 +11,9 @@ char *get_input(char *text);
 /// @param text The text to view when asking for a number.
 int number_input(char *text, char *invalid_text);
 
+/// @brief Get role input from the user.
+/// @param text The text to view when asking for a role.
 enum Role role_input(char *text);
-
 
 /// @brief Loop the input prompt
 /// @param text The text to view when asking for a input

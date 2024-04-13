@@ -11,7 +11,7 @@ bool does_lecturer_exist(char *lecturer_username) {
     if(lecturer == NULL) {
         return false;
     }
-    if (lecturer->role != LECTURER) {
+    if (lecturer->role != PROGRAMME_LEADER) {
         return false;
     } else {
         return true;

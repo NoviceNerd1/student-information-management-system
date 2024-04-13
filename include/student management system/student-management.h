@@ -6,6 +6,7 @@
 struct StudentRecord* get_student_record(int user_id);
 /// @brief Add the record of the student
 /// @param user_id The user id of the student, because student record and user data is linked with this
+/// @param course_id The course id to add the student to
 /// @return True if student record was added, otherwise returns false
 bool add_student_record(int user_id, int course_id);
 /// @brief Remove the record of the student

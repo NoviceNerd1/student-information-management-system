@@ -12,12 +12,12 @@
 #define MAX_OPTION_LENGTH 50
 #define MAX_OPTIONS 10
 
-/// @brief Function pointer for menu options
-typedef void (*MenuOptionFunction)();
-
 /// @brief Function to go back to from the menu
 typedef void (*MenuToGoBackTo)();
 
+
+/// @brief Function pointer for menu options
+typedef void (*MenuOptionFunction)();
 /// @brief Menu structure
 struct Menu {
     char options[MAX_OPTIONS][MAX_OPTION_LENGTH];

@@ -21,7 +21,7 @@ bool remove_student_record(int user_id) {
 
 int get_specific_student_record(int student_id, int type, int course_id) {
     if(!is_student_record_exist(student_id)) {
-        return -1; // ? Student record doesnt exist
+        return -1; 
     }
     struct StudentRecord *student = read_student_record_with_specific_course(student_id, course_id);
     if(type == 1) {

@@ -416,8 +416,7 @@ void add_student_record_option(struct User *user) {
                 if(is_student_in_course(student_id, course_id)) {
                     go_back_with_info("Student is already in this course!", user, student_management_menu);
                 } else {
-                    bool student_record_added = add_student_record(student_id, course_id);
-                    if(student_record_added) {
+                    if(add_student_record(student_id, course_id)) {
                         go_back_with_info("Student record added successfully!", user, student_management_menu);
                     } else {
                         go_back_with_info("There was an error while trying to add the student record!", user, student_management_menu);
@@ -570,9 +569,9 @@ void update_course_name_option(struct User *user) {
 /// @brief Programme Management Options 
 void add_programme_option(struct User *user) {
     char *programme_name = loop_input("Enter programme name:", "Please enter a valid programme name.");
-    char *lecturer_username = loop_input("Enter lecturer username:", "Please enter a valid lecturer username.");
+    char *lecturer_username = loop_input("Enter programme leader username:", "Please enter a valid programme leader username.");
     if(!does_lecturer_exist(lecturer_username)) {
-        go_back_with_info("Lecturer does not exist or the specified user isnt a lecturer!", user, programme_management_menu);
+        go_back_with_info("Programme leader does not exist or the specified user isnt a programme leader!", user, programme_management_menu);
     } else {
         int lecturer_id = read_user_record(lecturer_username)->user_id;
         if(add_programme(programme_name, lecturer_id)) {
