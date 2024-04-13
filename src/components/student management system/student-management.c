@@ -18,19 +18,6 @@ bool remove_student_record(int user_id) {
 }
 
 
-bool set_student_record(int student_id, int type, int value) {
-    if(!is_student_record_exist(student_id)) {
-        return false; // ? Student record doesnt exist
-    } 
-    struct StudentRecord *student = read_student_record(student_id);
-    if(type == 1) {
-        student->attendance = value;
-    } else if(type == 2) {
-        student->score = value;
-    }
-    return update_student_record(student); // ? Update student record, return true if successful
-}
-
 
 int get_specific_student_record(int student_id, int type, int course_id) {
     if(!is_student_record_exist(student_id)) {
@@ -49,11 +36,18 @@ bool add_student_data(int student_id, int course_id, int type, int value) {
     if(!is_student_record_exist(student_id)) {
         return false;
     }
-    struct StudentRecord *student = read_student_record(student_id);
+    struct StudentRecord *student = read_student_record_with_specific_course(student_id, course_id);
     if(type == 1) {
         student->attendance += value;
     } else if(type == 2) {
         student->score += value;
     }
     return update_student_record(student);
+}
+bool remove_student_data(int student_id, int course_id, int type, int value) {
+    return add_student_data(student_id, course_id, type, -value);
+}
+
+bool update_student_attandance(int student_id, int course_id, int value) {
+    return add_student_data(student_id, course_id, 1, value);
 }

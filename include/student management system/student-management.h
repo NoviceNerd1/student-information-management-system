@@ -21,9 +21,21 @@ int get_specific_student_record(int student_id, int type, int course_id);
 /// @brief Add student data to the student record
 /// @param student_id The students user id
 /// @param course_id The course id to add the data to
-/// @param type 
-/// @param value 
-/// @return 
-int add_student_data(int student_id, int course_id, int type, int value);
-
+/// @param type The type to add the value to
+/// @param value The value to add to the data
+/// @return True if the data was added, otherwise returns false
+bool add_student_data(int student_id, int course_id, int type, int value);
+/// @brief Remove student data from the student record
+/// @param student_id The students user id
+/// @param course_id The course id to remove the data from
+/// @param type The data type to remove value from
+/// @param value The value to remove from the data
+/// @return True if the data was removed, otherwise returns false
+bool remove_student_data(int student_id, int course_id, int type, int value);
+/// @brief Update the attandance of the student
+/// @param student_id The students user id
+/// @param course_id The course id of the student
+/// @param value The value to update the attandance with (positive or 0)
+/// @return True if the attandance was updated, otherwise returns false
+bool update_student_attandance(int student_id, int course_id, int value);
 #endif // !STUDENT_MANAGEMENT_H

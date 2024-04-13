@@ -43,8 +43,7 @@ void login_menu() {
         welcome_menu();
     } else {
         printf("Login successful!\n");
-        update_student_record_option(user); // ! Debug
-        // main_menu(user);
+        main_menu(user);
     }
 }
 
@@ -63,6 +62,7 @@ void main_menu(struct User *user) {
     }
     if (user_role >= 2 && user_role <= 3) {
         // Add options for Programme Leader and System Admin here
+        add_option(&menu, "Course Management", course_management_menu);
     }
     if (user_role == 3) {
         // Programe 
@@ -101,6 +101,21 @@ void user_management_menu(struct User *user) {
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "User Management Menu");
+
+    int option = option_input("Enter your option:", &menu);
+    option_handler(&menu, option, user);
+}
+
+void course_management_menu(struct User *user) {
+    struct Menu menu;
+    menu.num_options = 0;
+
+    add_option(&menu, "Add Course", main_menu);
+    add_option(&menu, "Remove Course", main_menu);
+    add_option(&menu, "View All Courses", main_menu);
+    add_option(&menu, "Return to Main Menu", main_menu);
+
+    box_menu(&menu, "Course Management Menu");
 
     int option = option_input("Enter your option:", &menu);
     option_handler(&menu, option, user);
@@ -207,7 +222,6 @@ void view_student_enrolled_courses(struct User *user, int student_id) {
     } else {
         int student_id = loop_number_input("Enter user id:", "Please enter a valid student id.");
         printf("View Student Enrolled Courses for student id: %d\n", student_id);
-
     }
     printf("View Student Enrolled Courses\n");	
 }
@@ -238,6 +252,7 @@ void view_student_attendance_record_option(struct User *user, int student_id) {
         }
         int student_attandance = get_specific_student_record(user->user_id, 1, 0);
         // ! Need to make it so that the number is made into a string i forgot how to do it waiting for wifi 
+        
         go_back_with_info("The attandance of the student for course 0 (defailt)", user, student_info_menu);
     } else {
         int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
@@ -257,15 +272,56 @@ void student_management_menu(struct User *user, int student_id) {
 }
 
 void update_student_record_option(struct User *user) {
-    if(user->role == 0) return go_back_with_info("You are a student, how did u get here", user, student_management_menu);
+    if(user->role == 0) go_back_with_info("You are a student, how did u get here", user, student_management_menu);
     int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
-    int type = loop_number_input("Enter type (1,2):", "Please enter a valid type.");
-    int value = loop_number_input("Enter value:", "Please enter a valid value.");
+    int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
 
-    bool student_data_added = add_student_data(student_id, 0, type, value);
-    if(!student_data_added) {
-        go_back_with_info("There was an error while trying to add the student data!", user, student_management_menu);
-    } else {
-        go_back_with_info("Student data added successfully!", user, student_management_menu);
+    struct StudentRecord *student_info = get_student_record(student_id);
+    if(student_info == NULL) {
+        go_back_with_info("No student record found for this student!", user, student_management_menu);
     }
+    if(course_id < 0) {
+        go_back_with_info("Invalid course id!", user, student_management_menu);
+    }
+
+    // ! Code for course validy check
+
+    int type = 0;
+    do {
+      type = loop_number_input("Enter type (attandance, score)(1,2):", "Please enter a valid type.");  
+    } while (type <= 0 || type >= 3);
+
+    if(type == 1) {
+        char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
+        
+        if (strcmp(value, "p") == 0 || strcmp(value, "P") == 0 || strcmp(value, "present") == 0 || strcmp(value, "Present") == 0){
+            bool make_student_present = update_student_attandance(student_id, course_id, 1);
+            if(!make_student_present) {
+                go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
+            } else {
+                go_back_with_info("Updated student's attandance!", user, student_management_menu);
+            }
+        } else if (strcmp(value, "a") == 0 || strcmp(value, "A") == 0 || strcmp(value, "absent") == 0 || strcmp(value, "Absent") == 0) {
+            bool make_student_present = update_student_attandance(student_id, course_id, 0);
+            if(!make_student_present) {
+                go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
+            } else {
+                go_back_with_info("Updated student's attandance!", user, student_management_menu);
+            }
+        } else {
+            char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
+        }
+    } else if (type == 2) {
+        int value = loop_number_input("Enter score:", "Please enter a valid score.");
+        bool student_data_added = add_student_data(student_id, course_id, 2, value);
+        if(!student_data_added) {
+            go_back_with_info("There was an error while trying to add the student data!", user, student_management_menu);
+        } else {
+            go_back_with_info("Updated student's score!", user, student_management_menu);
+        }
+    }
+}
+
+void add_course_option(struct User *user) {
+    printf("Add Course\n");
 }

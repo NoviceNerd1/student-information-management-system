@@ -47,3 +47,10 @@ option_handler(&menu, option, user);
 This is a bit more complicated to just write down, i will explain it when given the chance. This is as the name suggests the option handler. Basically takes the option and directs to the specific funtion its supposed to (the function in `add_option`). `option` must match the option name you set in option input. For testing purposes you can replace the `user` with `NULL` or just dont use the handler at all. It will still view ur options just wont do anything. Or u can look at the existing code and figure stuff out, learning it from the source itself!
 
 If you choose to keep it to these default values its gonna be easier for you. But you can dabble and make ur own names and try to come up with appropriate names for those things, just make sure the useage of the names are set properly.  
+
+## Misc
+### Make a string consisting numbers and strings (like in printf but as a single string)
+```c
+char output[100];
+sprintf(output, "Updated student's %s!", value);
+```

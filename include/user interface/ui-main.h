@@ -11,6 +11,7 @@ void main_menu(struct User *user);
 void student_info_menu(struct User *user, int student_id);
 void student_management_menu(struct User *user, int student_id);
 void user_management_menu(struct User *user);
+void course_management_menu(struct User *user);
 
 // Options
 void view_student_info(struct User *user);
