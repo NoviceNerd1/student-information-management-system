@@ -144,11 +144,30 @@ bool is_user_exist(char* username){
     return is_record_exist(get_user_file_path(), 1, username, 5);
 }
 
+bool is_user_exist_with_id(int user_id){
+    return is_record_exist(get_user_file_path(), 0, integer_to_string(user_id), 5);
+}
+
 struct User* read_user_record(char* username){
     if(is_user_exist(username)){
         char** user_information_array = calloc(5, sizeof(char*));
 
         read_record(get_user_file_path(), 1, username, user_information_array, 0);
+
+        if(user_information_array[0] != NULL) {
+            return array_to_user(user_information_array);
+        }
+    }
+    return NULL;
+}
+
+struct User* read_user_record_with_id(int user_id){
+    if(is_user_exist_with_id(user_id)){
+        char** user_information_array = calloc(5, sizeof(char*));
+        
+        char user_id_string[5];
+        sprintf(user_id_string, "%d", user_id);
+        read_record(get_user_file_path(), 0, user_id_string, user_information_array, 0);
 
         if(user_information_array[0] != NULL) {
             return array_to_user(user_information_array);

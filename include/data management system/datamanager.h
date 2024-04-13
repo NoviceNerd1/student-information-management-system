@@ -46,10 +46,14 @@ bool create_user_record(char* username, char* display_name, char* password, enum
 /// @return whether if user exists or not
 bool is_user_exist(char* username);
 
+bool is_user_exist_with_id(int user_id);
+
 /// @brief read a particular user with unique identifier (username)
 /// @param username the unique identifier that user is going to use to login into the application
 /// @return the user information will be returned
 struct User* read_user_record(char* username);
+
+struct User* read_user_record_with_id(int user_id);
 
 /// @brief update a particular user (identified using their username)
 /// @param username the unique identifier that user is going to use to login into the application
