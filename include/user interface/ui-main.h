@@ -25,6 +25,7 @@ void view_student_attendance_record_option(struct User *user, int student_id);
 void add_user_option(struct User *user);
 void remove_user_options(struct User *user);
 
+void add_student_record_option(struct User *user);
 void update_student_record_option(struct User *user);
 
 void add_course_option(struct User *user);

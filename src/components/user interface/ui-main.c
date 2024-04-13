@@ -180,7 +180,11 @@ void add_user_option(struct User *user) {
         struct User *user_data_created = read_user_record(username);
         int created_user_id = user_data_created->user_id;
         if(role == STUDENT) {
-            bool was_student_added = add_student_record(created_user_id);
+            int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+            if(!is_course_exist(course_id)) {
+                go_back_with_info("Course does not exist!", user, user_management_menu);
+            }
+            bool was_student_added = add_student_record(created_user_id, course_id);
             if(!was_student_added) printf("There was an issue adding the student data!\n");
         }
         go_back_with_info("User added successfully!", user, user_management_menu);
@@ -386,6 +390,7 @@ void student_management_menu(struct User *user, int student_id) {
     struct Menu menu;
     menu.num_options = 0;
 
+    add_option(&menu, "Add Student Record", add_student_record_option);
     add_option(&menu, "Update Student Record", update_student_record_option);
     add_option(&menu, "Return to Main Menu", main_menu);
 
@@ -393,6 +398,34 @@ void student_management_menu(struct User *user, int student_id) {
 
     int option = option_input("Enter your option:", &menu);
     option_handler(&menu, option, user);
+
+}
+
+void add_student_record_option(struct User *user) {
+    int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
+    if(!is_user_exist_with_id(student_id)) {
+        go_back_with_info("User does not exist!", user, student_management_menu);
+    } else {
+        if(read_user_record_with_id(student_id)->role != 0) {
+            go_back_with_info("This is not a student!", user, student_management_menu);
+        } else {
+            int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+            if(!is_course_exist(course_id)) {
+            go_back_with_info("Course does not exist!", user, student_management_menu);
+            } else {
+                if(is_student_in_course(student_id, course_id)) {
+                    go_back_with_info("Student is already in this course!", user, student_management_menu);
+                } else {
+                    bool student_record_added = add_student_record(student_id, course_id);
+                    if(student_record_added) {
+                        go_back_with_info("Student record added successfully!", user, student_management_menu);
+                    } else {
+                        go_back_with_info("There was an error while trying to add the student record!", user, student_management_menu);
+                    }
+                }
+            }
+        }
+    }
 
 }
 

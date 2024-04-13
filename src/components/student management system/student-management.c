@@ -8,8 +8,8 @@ struct StudentRecord** get_student_record(int user_id) {
     return read_student_record(user_id);
 }
 
-bool add_student_record(int user_id) {
-    struct StudentRecord *student_object = create_student_record_object(user_id, 0, 0, 0);
+bool add_student_record(int user_id, int course_id) {
+    struct StudentRecord *student_object = create_student_record_object(user_id, course_id, 0, 0);
     return create_student_record(student_object);
 }
 
