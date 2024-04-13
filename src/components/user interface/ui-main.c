@@ -6,6 +6,9 @@
 #include <systems/user-system.h>
 #include <data management system/datamanager.h>
 #include <student management system/student-management.h>
+#include <course management system/course-management.h>
+#include <lecturer management system/lecturer-management.h>
+#include <programme management system/programme-management.h>
 #include <login.h> 
 #include <stdbool.h>
 #include <user interface/ui-main.h>
@@ -63,9 +66,10 @@ void main_menu(struct User *user) {
     if (user_role >= 2 && user_role <= 3) {
         // Add options for Programme Leader and System Admin here
         add_option(&menu, "Course Management", course_management_menu);
+        add_option(&menu, "Programme Management", programme_management_menu);
     }
     if (user_role == 3) {
-        // Programe 
+        // System Admin
         add_option(&menu, "User Management", user_management_menu);
     }
 
@@ -81,8 +85,9 @@ void student_info_menu(struct User *user, int student_id) {
     struct Menu menu;
     menu.num_options = 0;
 
-    add_option(&menu, "View Student Info", view_student_attendance_record_option);
-    add_option(&menu, "Enrolled Courses", view_student_enrolled_courses);
+    add_option(&menu, "View Student Info", view_student_info_option);
+    add_option(&menu, "View Student Course Score", main_menu);
+    add_option(&menu, "Enrolled Courses", main_menu);
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "Student Info Menu");
@@ -110,8 +115,9 @@ void course_management_menu(struct User *user) {
     struct Menu menu;
     menu.num_options = 0;
 
-    add_option(&menu, "Add Course", main_menu);
-    add_option(&menu, "Remove Course", main_menu);
+    add_option(&menu, "Add Course", add_course_option);
+    add_option(&menu, "Remove Course", remove_course_option);
+    add_option(&menu, "Update Course Record", update_course_record_option_menu);
     add_option(&menu, "View All Courses", main_menu);
     add_option(&menu, "Return to Main Menu", main_menu);
 
@@ -120,6 +126,36 @@ void course_management_menu(struct User *user) {
     int option = option_input("Enter your option:", &menu);
     option_handler(&menu, option, user);
 }
+void update_course_record_option_menu(struct User *user) {
+    struct Menu menu;
+    menu.num_options = 0;
+
+    add_option(&menu, "Assign new lecturer", update_course_lecturer_option);
+    add_option(&menu, "Update Course Programme", update_course_programme_option);
+    add_option(&menu, "Update Course Name", update_course_name_option);
+    add_option(&menu, "Return to previous menu", course_management_menu);
+
+    box_menu(&menu, "Update Course Record Menu");
+
+    int option = option_input("Enter your option:", &menu);
+    option_handler(&menu, option, user);
+}
+
+void programme_management_menu(struct User *user) {
+    struct Menu menu;
+    menu.num_options = 0;
+
+    add_option(&menu, "Add Programme", add_programme_option);
+    add_option(&menu, "Remove Programme", remove_programme_option);
+    add_option(&menu, "View All Programmes", main_menu);
+    add_option(&menu, "Return to Main Menu", main_menu);
+
+    box_menu(&menu, "Programme Management Menu");
+
+    int option = option_input("Enter your option:", &menu);
+    option_handler(&menu, option, user);
+}
+
 
 void logout_menu(struct User *user) {
     printf("Logout successful!\n");
@@ -175,7 +211,6 @@ void remove_user_options(struct User *user) {
         {
             bool is_student_removed = remove_student_record(user_to_delete->user_id);
         } while (is_student_record_exist(user_to_delete->user_id));
-        
         // if(!is_student_record_exist(user_to_delete->user_id)) {
         //     go_back_with_info("The student record for this user which is a student could not be removed so the user will not be removed!", user, user_management_menu);
         // }
@@ -194,6 +229,48 @@ void remove_user_options(struct User *user) {
 }
 
 ///@brief Student Info Options
+
+void view_student_info_option(struct User *user) {
+    if(user->role == 0) {
+        struct StudentRecord *student_info = get_student_record(user->user_id);
+        if(student_info == NULL) {
+            go_back_with_info("No student record found for this user.", user, student_info_menu);
+        } else {
+            create_box("Student Info");
+            char displayname[100];
+            sprintf(displayname, "Display Name: %s", user->display_name);
+            add_info(displayname);
+            char username[100];
+            sprintf(username, "Username: %s", user->username);
+            add_info(username);
+            char user_id[100];
+            sprintf(user_id, "User ID: %d", user->user_id);
+            add_info(user_id);
+
+            char student_courses_count[100];
+            struct Course **courses = get_all_student_courses(user->user_id);
+            int courses_count = 0;
+            while(courses[courses_count] != NULL) {
+                courses_count++;
+            }
+            sprintf(student_courses_count, "Courses attending: %d", courses_count);
+            add_info(student_courses_count);
+
+            close_box();
+
+            go_back_with_info(NULL, user, student_info_menu);
+        }
+    } else {
+        int user_id = loop_number_input("Enter user id:", "Please enter a valid user id.");
+        struct StudentRecord *student_info = get_student_record(user_id);
+        if(student_info == NULL) {
+            go_back_with_info("No student record found for this user.", user, student_info_menu);
+        } else {
+            // box_info("Student Info", student_info->attendance);
+        }
+    }
+}
+
 
 void view_student_info(struct User *user) {
     if(user->role == 0) {
@@ -251,9 +328,7 @@ void view_student_attendance_record_option(struct User *user, int student_id) {
             go_back_with_info("You are not a student, how did u get here", user, student_info_menu);
         }
         int student_attandance = get_specific_student_record(user->user_id, 1, 0);
-        // ! Need to make it so that the number is made into a string i forgot how to do it waiting for wifi 
-        
-        go_back_with_info("The attandance of the student for course 0 (defailt)", user, student_info_menu);
+        go_back_with_info("The attandance of the student for course 0 (default)", user, student_info_menu);
     } else {
         int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
         if(!is_student_record_exist(student_id)) {
@@ -322,6 +397,113 @@ void update_student_record_option(struct User *user) {
     }
 }
 
+///@brief Course Management Options
+
 void add_course_option(struct User *user) {
-    printf("Add Course\n");
+    if(user->role == 0) go_back_with_info("You are a student, how did u get here", user, main_menu);
+    int programme_id = loop_number_input("Enter programme id:", "Please enter a valid progamme id.");
+    if(!does_programme_exist(programme_id)) {
+        go_back_with_info("Programme does not exist!", user, course_management_menu);
+    } else {
+        char *course_name = loop_input("Enter course name:", "Please enter a valid course name.");
+        char *lecturer_username = loop_input("Enter lecturer username:", "Please enter a valid lecturer username.");
+        if(!does_lecturer_exist(lecturer_username)) {
+            go_back_with_info("Lecturer does not exist or the specified user isnt a lecturer!", user, course_management_menu);
+        }
+        int lecturer_id = read_user_record(lecturer_username)->user_id;
+        // TO add course
+        if(add_course(programme_id, course_name, lecturer_id)) {
+            go_back_with_info("Course added successfully!", user, course_management_menu);
+        } else {
+            go_back_with_info("There was an error while trying to add the course!", user, course_management_menu);
+        }
+    }
 }
+void remove_course_option(struct User *user) {
+    int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+    if(!does_course_exist(course_id)) {
+        go_back_with_info("Course does not exist!", user, course_management_menu);
+    } else {
+        if(remove_course(course_id)) {
+            go_back_with_info("Course removed successfully!", user, course_management_menu);
+        } else {
+            go_back_with_info("There was an error while trying to remove the course!", user, course_management_menu);
+        }
+    }
+}
+void update_course_lecturer_option(struct User *user) {
+    int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+    if(!does_course_exist(course_id)) {
+        go_back_with_info("Course does not exist!", user, update_course_record_option_menu);
+    } else {
+        char *lecturer_username = loop_input("Enter lecturer username:", "Please enter a valid lecturer username.");
+        if(!does_lecturer_exist(lecturer_username)) {
+            go_back_with_info("Lecturer does not exist or the specified user isnt a lecturer!", user, update_course_record_option_menu);
+        }
+        if(assign_lecturer_to_course(course_id, lecturer_username)) {
+            go_back_with_info("Lecturer assigned to course successfully!", user, update_course_record_option_menu);
+        } else {
+            go_back_with_info("There was an error while trying to assign the lecturer to the course!", user, update_course_record_option_menu);
+        }
+    }
+}
+void update_course_programme_option(struct User *user) {
+    int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+    if(!does_course_exist(course_id)) {
+        go_back_with_info("Course does not exist!", user, update_course_record_option_menu);
+    } else {
+        int programme_id = loop_number_input("Enter programme id:", "Please enter a valid programme id.");
+        if(!does_programme_exist(programme_id)) {
+            go_back_with_info("Programme does not exist!", user, update_course_record_option_menu);
+        }
+        if(update_course_programme(course_id, programme_id)) {
+            go_back_with_info("Course programme updated successfully!", user, update_course_record_option_menu);
+        } else {
+            go_back_with_info("There was an error while trying to update the course programme!", user, update_course_record_option_menu);
+        }
+    }
+}
+void update_course_name_option(struct User *user) {
+    int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+    if(!does_course_exist(course_id)) {
+        go_back_with_info("Course does not exist!", user, update_course_record_option_menu);
+    } else {
+        char *course_name = loop_input("Enter course name:", "Please enter a valid course name.");
+        if(update_course_name(course_id, course_name)) {
+            go_back_with_info("Course name updated successfully!", user, update_course_record_option_menu);
+        } else {
+            go_back_with_info("There was an error while trying to update the course name!", user, update_course_record_option_menu);
+        }
+    }
+
+}
+
+/// @brief Programme Management Options 
+void add_programme_option(struct User *user) {
+    char *programme_name = loop_input("Enter programme name:", "Please enter a valid programme name.");
+    char *lecturer_username = loop_input("Enter lecturer username:", "Please enter a valid lecturer username.");
+    if(!does_lecturer_exist(lecturer_username)) {
+        go_back_with_info("Lecturer does not exist or the specified user isnt a lecturer!", user, programme_management_menu);
+    } else {
+        int lecturer_id = read_user_record(lecturer_username)->user_id;
+        if(add_programme(programme_name, lecturer_id)) {
+            go_back_with_info("Programme added successfully!", user, programme_management_menu);
+        } else {
+            go_back_with_info("There was an error while trying to add the programme!", user, programme_management_menu);
+        }
+    }
+}
+
+void remove_programme_option(struct User *user) {
+    int programme_id = loop_number_input("Enter programme id:", "Please enter a valid programme id.");
+    if(!does_programme_exist(programme_id)) {
+        go_back_with_info("Programme does not exist!", user, programme_management_menu);
+    } else {
+        if(remove_programme(programme_id)) {
+            go_back_with_info("Programme removed successfully!", user, programme_management_menu);
+        } else {
+            go_back_with_info("There was an error while trying to remove the programme!", user, programme_management_menu);
+        }
+    }
+}
+

@@ -51,3 +51,9 @@ bool remove_student_data(int student_id, int course_id, int type, int value) {
 bool update_student_attandance(int student_id, int course_id, int value) {
     return add_student_data(student_id, course_id, 1, value);
 }
+
+int all_courses_count(int student_id) {
+    if(!is_student_record_exist(student_id)) {
+        return -1;
+    }
+}

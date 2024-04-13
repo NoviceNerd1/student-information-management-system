@@ -22,9 +22,14 @@ void add_option(struct Menu *menu, const char *option, MenuOptionFunction functi
 
 // !!! Make this take arrays of info and use the full potention of box_info
 void go_back_with_info(char *info, struct User *user, MenuToGoBackTo function) {
-    box_info(info);
-    get_input("Press enter to go back...");
-    function(user);
+    if(info == NULL) {
+        get_input("Press enter to go back...");
+        function(user);
+    } else {
+        box_info(info);
+        get_input("Press enter to go back...");
+        function(user);
+    }
 }
 
 int get_max_length(struct Menu *menu, char *menu_name) {
@@ -84,7 +89,7 @@ void create_box(char *title) {
 
 void add_info(char *info) {
     printf("| %s", info); // Print info
-    int spaces = DEFAULT_WIDTH - strlen(info) - 3; // Subtract 3 for the '|', and ' ' characters
+    int spaces = DEFAULT_WIDTH - strlen(info) - 4; // Subtract 3 for the '|', and ' ' characters
     for (int i = 0; i < spaces; i++) {
         printf(" ");
     }
