@@ -1,6 +1,6 @@
 #ifndef STUDENT_MANAGEMENT_H
 #define STUDENT_MANAGEMENT_H
-
+#include <data management system/datamanager.h>
 /// @brief Get student record, this one is not complete
 /// @param user_id The user id of the student to get
 struct StudentRecord* get_student_record(int user_id);

@@ -86,8 +86,7 @@ void student_info_menu(struct User *user, int student_id) {
     menu.num_options = 0;
 
     add_option(&menu, "View Student Info", view_student_info_option);
-    add_option(&menu, "View Student Course Score", main_menu);
-    add_option(&menu, "Enrolled Courses", main_menu);
+    add_option(&menu, "View Student Course Info", view_student_course_info);
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "Student Info Menu");
@@ -102,7 +101,6 @@ void user_management_menu(struct User *user) {
 
     add_option(&menu, "Add User", add_user_option);
     add_option(&menu, "Remove User", remove_user_options);
-    add_option(&menu, "View All Users", view_all_user_option);
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "User Management Menu");
@@ -118,7 +116,6 @@ void course_management_menu(struct User *user) {
     add_option(&menu, "Add Course", add_course_option);
     add_option(&menu, "Remove Course", remove_course_option);
     add_option(&menu, "Update Course Record", update_course_record_option_menu);
-    add_option(&menu, "View All Courses", main_menu);
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "Course Management Menu");
@@ -147,7 +144,6 @@ void programme_management_menu(struct User *user) {
 
     add_option(&menu, "Add Programme", add_programme_option);
     add_option(&menu, "Remove Programme", remove_programme_option);
-    add_option(&menu, "View All Programmes", main_menu);
     add_option(&menu, "Return to Main Menu", main_menu);
 
     box_menu(&menu, "Programme Management Menu");
@@ -263,63 +259,107 @@ void view_student_info_option(struct User *user) {
     } else {
         int user_id = loop_number_input("Enter user id:", "Please enter a valid user id.");
         struct StudentRecord *student_info = get_student_record(user_id);
+        struct User *studentUser = read_user_record_with_id(user_id);
         if(student_info == NULL) {
             go_back_with_info("No student record found for this user.", user, student_info_menu);
         } else {
-            // box_info("Student Info", student_info->attendance);
+            create_box("Student Info");
+            char displayname[100];
+            sprintf(displayname, "Display Name: %s", studentUser->display_name);
+            add_info(displayname);
+            char username[100];
+            sprintf(username, "Username: %s", studentUser->username);
+            add_info(username);
+            char user_id[100];
+            sprintf(user_id, "User ID: %d", studentUser->user_id);
+            add_info(user_id);
+
+            char student_courses_count[100];
+            struct Course **courses = get_all_student_courses(studentUser->user_id);
+            int courses_count = 0;
+            while(courses[courses_count] != NULL) {
+                courses_count++;
+            }
+            sprintf(student_courses_count, "Courses attending: %d", courses_count);
+            add_info(student_courses_count);
+
+            close_box();
+
+            go_back_with_info(NULL, user, student_info_menu);
         }
     }
 }
 
-
-void view_student_info(struct User *user) {
+void view_student_course_info(struct User *user) {
     if(user->role == 0) {
-        struct StudentRecord *student_info = get_student_record(user->user_id);
-        if(student_info == NULL) {
-            printf("No student record found for this user.\n");
-            student_info_menu(user, 0);
+        int student_id = user->user_id;
+        if(!is_student_record_exist(student_id)) {
+            go_back_with_info("This is not a student!", user, student_info_menu);
+        }
+        int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+        if(!is_course_exist(course_id)) {
+            go_back_with_info("This is not a course!", user, student_info_menu);
+        }
+        if(!is_student_in_course(student_id, course_id)) {
+            go_back_with_info("This student is not in this course!", user, student_info_menu);
         } else {
-            printf("Attandace: %d", student_info->attendance);
+            struct StudentRecord *student_info = get_student_record(student_id);
+            struct Course *course = read_course_record(course_id);
+            char viewing_student[100];
+            sprintf(viewing_student, "Student ID: %d", student_id);
+            char course_name[100];
+            sprintf(course_name, "Course Name: %s", course->course_name);
+            char lecturer[100];
+            sprintf(lecturer, "Lecturer: %s", read_user_record_with_id(course->lecturer_id)->display_name);
+            char attendance[100];
+            sprintf(attendance, "Classes attended: %d", get_specific_student_record(student_id, 1, course_id));
+            char score[100];
+            sprintf(score, "Score: %d", get_specific_student_record(student_id, 2, course_id));
+            create_box("Student Course Info");
+            add_info(viewing_student);
+            add_info(course_name);
+            add_info(lecturer);
+            add_info(attendance);
+            add_info(score);
+            close_box();
+            go_back_with_info(NULL, user, student_info_menu);
         }
-    } else {
-        int user_id = loop_number_input("Enter user id:", "Please enter a valid user id.");
-        struct StudentRecord *student_info = get_student_record(user_id);
-        if(student_info == NULL) {
-            printf("No student record found for this user.\n");
-            student_info_menu(user, 0);
-        } else {
-            printf("Attandance: %d", student_info->attendance); 
-        }
-    }
-}
-
-void view_student_enrolled_courses(struct User *user, int student_id) {
-    if(user->role == 0) {
-        printf("View Student Enrolled Courses\n");
-    } else {
-        int student_id = loop_number_input("Enter user id:", "Please enter a valid student id.");
-        printf("View Student Enrolled Courses for student id: %d\n", student_id);
-    }
-    printf("View Student Enrolled Courses\n");	
-}
-
-void view_student_course_score(struct User *user, int student_id) {
-    if(user->role == 0) {
-        printf("View Student Course Score\n");
     } else {
         int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
-        printf("View Student Course Score for student: %d\n", student_id);
+        if(!is_student_record_exist(student_id)) {
+            go_back_with_info("This is not a student!", user, student_info_menu);
+        }
+        int course_id = loop_number_input("Enter course id:", "Please enter a valid course id.");
+        if(!is_course_exist(course_id)) {
+            go_back_with_info("This is not a course!", user, student_info_menu);
+        }
+        if(!is_student_in_course(student_id, course_id)) {
+            go_back_with_info("This student is not in this course!", user, student_info_menu);
+        } else {
+            struct StudentRecord *student_info = get_student_record(student_id);
+            struct Course *course = read_course_record(course_id);
+            char viewing_student[100];
+            sprintf(viewing_student, "Student ID: %d", student_id);
+            char course_name[100];
+            sprintf(course_name, "Course Name: %s", course->course_name);
+            char lecturer[100];
+            sprintf(lecturer, "Lecturer: %s", read_user_record_with_id(course->lecturer_id)->display_name);
+            char attendance[100];
+            sprintf(attendance, "Classes attended: %d", get_specific_student_record(student_id, 1, course_id));
+            char score[100];
+            sprintf(score, "Score: %d", get_specific_student_record(student_id, 2, course_id));
+            create_box("Student Course Info");
+            add_info(viewing_student);
+            add_info(course_name);
+            add_info(lecturer);
+            add_info(attendance);
+            add_info(score);
+            close_box();
+            go_back_with_info(NULL, user, student_info_menu);
+        }
     }
 }
 
-void view_student_cgpa(struct User *user, int student_id) {
-    if(user->role == 0) {
-        printf("View Student CGPA\n");
-    } else {
-        int student_id = loop_number_input("Enter student id:", "Please enter a valid student id.");
-        printf("View Student CGPA for student: %d\n", student_id);
-    }
-}
 
 void view_student_attendance_record_option(struct User *user, int student_id) {
     if(user->role == 0) {
@@ -343,7 +383,17 @@ void view_student_attendance_record_option(struct User *user, int student_id) {
 ///@brief Student Management Options
 
 void student_management_menu(struct User *user, int student_id) {
-    printf("Student Management\n");
+    struct Menu menu;
+    menu.num_options = 0;
+
+    add_option(&menu, "Update Student Record", update_student_record_option);
+    add_option(&menu, "Return to Main Menu", main_menu);
+
+    box_menu(&menu, "Student Management Menu");
+
+    int option = option_input("Enter your option:", &menu);
+    option_handler(&menu, option, user);
+
 }
 
 void update_student_record_option(struct User *user) {
@@ -359,40 +409,46 @@ void update_student_record_option(struct User *user) {
         go_back_with_info("Invalid course id!", user, student_management_menu);
     }
 
-    // ! Code for course validy check
-
-    int type = 0;
-    do {
-      type = loop_number_input("Enter type (attandance, score)(1,2):", "Please enter a valid type.");  
-    } while (type <= 0 || type >= 3);
-
-    if(type == 1) {
-        char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
-        
-        if (strcmp(value, "p") == 0 || strcmp(value, "P") == 0 || strcmp(value, "present") == 0 || strcmp(value, "Present") == 0){
-            bool make_student_present = update_student_attandance(student_id, course_id, 1);
-            if(!make_student_present) {
-                go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
-            } else {
-                go_back_with_info("Updated student's attandance!", user, student_management_menu);
-            }
-        } else if (strcmp(value, "a") == 0 || strcmp(value, "A") == 0 || strcmp(value, "absent") == 0 || strcmp(value, "Absent") == 0) {
-            bool make_student_present = update_student_attandance(student_id, course_id, 0);
-            if(!make_student_present) {
-                go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
-            } else {
-                go_back_with_info("Updated student's attandance!", user, student_management_menu);
-            }
+    if(!is_course_exist(course_id)) {
+        go_back_with_info("Course does not exist!", user, student_management_menu);
+    } else {
+        if(!is_student_in_course(student_id, course_id)) {
+            go_back_with_info("Student is not in this course!", user, student_management_menu);
         } else {
-            char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
-        }
-    } else if (type == 2) {
-        int value = loop_number_input("Enter score:", "Please enter a valid score.");
-        bool student_data_added = add_student_data(student_id, course_id, 2, value);
-        if(!student_data_added) {
-            go_back_with_info("There was an error while trying to add the student data!", user, student_management_menu);
-        } else {
-            go_back_with_info("Updated student's score!", user, student_management_menu);
+            int type = 0;
+            do {
+              type = loop_number_input("Enter type (attandance, score)(1,2):", "Please enter a valid type.");  
+            } while (type <= 0 || type >= 3);
+
+            if(type == 1) {
+                char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
+
+                if (strcmp(value, "p") == 0 || strcmp(value, "P") == 0 || strcmp(value, "present") == 0 || strcmp(value, "Present") == 0){
+                    bool make_student_present = update_student_attandance(student_id, course_id, 1);
+                    if(!make_student_present) {
+                        go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
+                    } else {
+                        go_back_with_info("Updated student's attandance!", user, student_management_menu);
+                    }
+                } else if (strcmp(value, "a") == 0 || strcmp(value, "A") == 0 || strcmp(value, "absent") == 0 || strcmp(value, "Absent") == 0) {
+                    bool make_student_present = update_student_attandance(student_id, course_id, 0);
+                    if(!make_student_present) {
+                        go_back_with_info("There was an error while trying to update the student's attandance!", user, student_management_menu);
+                    } else {
+                        go_back_with_info("Updated student's attandance!", user, student_management_menu);
+                    }
+                } else {
+                    char *value = loop_input("Enter attandance (Present, Absent)(p,a):", "Please enter p for present and a for Absent!");
+                }
+            } else if (type == 2) {
+                int value = loop_number_input("Enter score:", "Please enter a valid score.");
+                bool student_data_added = add_student_data(student_id, course_id, 2, value);
+                if(!student_data_added) {
+                    go_back_with_info("There was an error while trying to add the student data!", user, student_management_menu);
+                } else {
+                    go_back_with_info("Updated student's score!", user, student_management_menu);
+                }
+            }
         }
     }
 }
