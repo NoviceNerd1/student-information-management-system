@@ -1,87 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "common-functions.h"
-#include "user-interface.h"
+// Interface Files
+#include <user interface/ui-main.h>
+#include <user interface/ui-utils.h>
+#include <user interface/ui-inputs.h>
+// Include Files End
 #define DEFAULT_WIDTH 30
-int number_input(char *text) {
-    char buffer[10];
-    char *string;
-    long value;
 
-    do {
-        printf("%s", text);
-        fgets(buffer, sizeof(buffer), stdin);
-        buffer[strcspn(buffer, "\n")] = '\0';
-        value = strtol(buffer, &string, 10);
-
-        if (string == buffer || *string != '\0') {
-            printf("Please enter a numeric value.\n");
-            value = 0;
-        }
-    } while (!value);
-
-    return value;
-}
-
-int loop_number_input(char *text, char *invalid_text) {
-    int value = 0;
-
-    do {
-        value = number_input(text);
-        if (!value) {
-            printf("%s\n", invalid_text);
-        }
-    } while (!value);
-
-    return value;
-}
-
-char *get_input(char *text) {
-    const int BUFFER_SIZE = 100;
-    char buffer[BUFFER_SIZE];
-
-    printf("%s", text);
-
-    if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
-        return NULL;
-    }
-
-    buffer[strcspn(buffer, "\n")] = '\0';
-
-    char *result = strdup(buffer);
-
-    return result;
-}
-
-char *loop_input(char *text, char *invalid_text) {
-    char *result;
-    do {
-        result = get_input(text);
-        if (strlen(result) == 0) {
-            printf("%s\n", invalid_text);
-        }
-    } while (strlen(result) == 0);
-
-    return result;
-}
-
-int option_input(char *text, struct Menu *menu) {
-    int value;
-    do {
-        value = number_input(text);
-        if (value < 1 || value > menu->num_options) {
-            printf("Please choose a valid option! Available options: %d\n", menu->num_options);
-            value = 0;
-        }
-    } while (!value);
-
-    return value;
-}
-
-void logout() {
-    welcome_menu();
-}
 
 void exit_message() {
     printf("Exiting the system. Goodbye!\n");
@@ -92,6 +18,18 @@ void add_option(struct Menu *menu, const char *option, MenuOptionFunction functi
     strncpy(menu->options[menu->num_options], option, MAX_OPTION_LENGTH);
     menu->functions[menu->num_options] = function;
     menu->num_options++;
+}
+
+// !!! Make this take arrays of info and use the full potention of box_info
+void go_back_with_info(char *info, struct User *user, MenuToGoBackTo function) {
+    if(info == NULL) {
+        get_input("Press enter to go back...");
+        function(user);
+    } else {
+        box_info(info);
+        get_input("Press enter to go back...");
+        function(user);
+    }
 }
 
 int get_max_length(struct Menu *menu, char *menu_name) {
@@ -131,11 +69,10 @@ void box_menu(struct Menu *menu, char *menu_name) {
         for (int j = 0; j < spaces; j++) {
             printf(" ");
         }
-        printf(" |\n");
+        printf("|\n");
     }
     print_line(max_length); // Print bottom border for options
 }
-
 void create_box(char *title) {
     int max_length = DEFAULT_WIDTH;
     print_line(max_length); // Print top divider for title
@@ -149,9 +86,10 @@ void create_box(char *title) {
 
     print_line(max_length - 3); // Print top border for info
 }
+
 void add_info(char *info) {
     printf("| %s", info); // Print info
-    int spaces = DEFAULT_WIDTH - strlen(info) - 3; // Subtract 3 for the '|', and ' ' characters
+    int spaces = DEFAULT_WIDTH - strlen(info) - 4; // Subtract 3 for the '|', and ' ' characters
     for (int i = 0; i < spaces; i++) {
         printf(" ");
     }
@@ -161,10 +99,47 @@ void close_box() {
     int max_length = DEFAULT_WIDTH;
     print_line(max_length - 3); // Print bottom border for info
 }
+
+void box_info(char *info) {
+    int max_length = strlen(info) + 4;
+    print_line(max_length); 
+    printf("| %s", info);
+    int spaces = max_length - strlen(info) - 1;
+    for (int i = 0; i < spaces; i++) {
+        printf(" ");
+    }
+    printf("|\n");
+    print_line(max_length);
+}
+
+// void box_info_multi(char **info) {
+//     int max_length = strlen(info) + 4;
+//     print_line(max_length); 
+//     int count = sizeof(info) / sizeof(info[0]);
+//     for (int i = 0; i < count; i++) {
+//         printf("| %s", info);
+//         int spaces = max_length - strlen(info) - 1;
+//     }
+//     for (int i = 0; i < spaces; i++) {
+//         printf(" ");
+//     }
+//     printf("|\n");
+//     print_line(max_length);
+// }
+
 void option_handler(struct Menu *menu, int option, struct User *user) {
     if (option >= 1 && option <= menu->num_options) {
         menu->functions[option - 1](user);
     } else {
         printf("Invalid option. Please try again.\n");
     }
+}
+
+void debug_printf(char *info) {
+    int max_length = strlen(info) + 4;
+    print_line(max_length);
+    print_line(max_length);
+    printf("%s\n", info);
+    print_line(max_length);
+    print_line(max_length);
 }

@@ -31,6 +31,8 @@ struct User {
     enum Role role; /**< The specific role of the user */
 };
 
+struct User* create_user_object(int user_id, char* username, char* display_name, char* password, enum Role role);
+
 /// @brief create a new user with certain roles (USED BY : SYSTEM ADMIN)
 /// @param username the unique identifier that user is going to use to login into the application
 /// @param display_name How the user would be greeted in the menu screen
@@ -44,10 +46,14 @@ bool create_user_record(char* username, char* display_name, char* password, enum
 /// @return whether if user exists or not
 bool is_user_exist(char* username);
 
+bool is_user_exist_with_id(int user_id);
+
 /// @brief read a particular user with unique identifier (username)
 /// @param username the unique identifier that user is going to use to login into the application
-/// @param user_information the place from which the user information will be returned
-void read_user_record(char* username, struct User* user_information);
+/// @return the user information will be returned
+struct User* read_user_record(char* username);
+
+struct User* read_user_record_with_id(int user_id);
 
 /// @brief update a particular user (identified using their username)
 /// @param username the unique identifier that user is going to use to login into the application
@@ -70,13 +76,15 @@ int get_number_of_users();
 /// @param pointer to the
 void get_all_users(struct User* user[]);
 
-/// @brief data structure for StudentRecord.txt
+/// @brief data structure for StudentRecord.txt, this is a many-to-many relationship between student and course
 struct StudentRecord{
     int user_id; /**< The id of the student related to this record */
     int course_id; /**< The id of the course related to this record */
     int attendance; /**< The attendance of a student in a specific course*/
     int score; /**< The score of a student in a specific course*/
 };
+
+struct StudentRecord* create_student_record_object(int user_id, int course_id, int attendance, int score);
 
 /// @brief create a new record regarding with a student
 /// @param record student record that contains all the data related to a student
@@ -92,7 +100,23 @@ bool is_student_record_exist(int user_id);
 /// @param user_id the id of the user
 /// @param result_record where the result will be pasted upon using pointers
 /// @return the student record
-void read_student_record(int user_id, struct StudentRecord* result_record);
+struct StudentRecord** read_student_record(int user_id);
+
+/// @brief read a student record with a specific course
+/// @param user_id the id of the user
+/// @param course_id the id of the course
+/// @return the student record with a specific course
+struct StudentRecord* read_student_record_with_specific_course(int user_id, int course_id);
+
+/// @brief get all the courses of a particular student
+/// @param user_id the id of the user
+/// @return the courses that the student is taking
+struct Course** get_all_student_courses(int user_id);
+
+/// @brief get all the student records with a specific course
+/// @param course_id the id of the course
+/// @return the student records with a specific course
+struct StudentRecord** get_all_student_records_with_specific_course(int course_id);
 
 /// #brief update a student record with user_id
 /// @param the entire record that we are going to replace
@@ -115,14 +139,45 @@ struct Course{
     int course_id; /**< The unique id of the course */
     int programme_id; /**< The id of the programme related to this course record */
     char* course_name; /**< The name of this course */
-    char* lecturer_id; /**< The id of the lecturer related to this record */
+    int lecturer_id; /**< The id of the lecturer related to this record */
 };
 
-bool create_course_record(int programme_id, char* course_name, char* lecturer_id);
-struct Course read_course_record(int course_id);
-bool update_course_record(int course_id);
+struct Course* create_course_object(int course_id, int programme_id, char* course_name, int lecturer_id);
+
+/// @brief check whether if a course exists or not
+/// @param course_id the course of interest
+/// @return whether if the course exists
+bool is_course_exist(int course_id);
+
+/// @brief create a record for a particular course
+/// @param programme_id 
+/// @param course_name 
+/// @param lecturer_id 
+/// @return whether if the course has been successfully created or not
+bool create_course_record(int programme_id, char* course_name, int lecturer_id);
+
+/// @brief read a particular course record
+/// @param course_id the id of the specific course we are trying to read
+/// @return the particular course of interest
+struct Course* read_course_record(int course_id);
+
+/// @brief update a particular course record
+/// @param course_id the id of the specific course that I am trying to update
+/// @param programme_id the id of the programme this course is related to
+/// @param course_name the name of this particular course
+/// @param lecturer_id the id of the lecturer
+/// @return 
+bool update_course_record(int course_id, int programme_id, char* course_name, int lecturer_id);
+
+/// @brief delete a particular course record using the course iod
+/// @param course_id the id of the specific course that i am trying to delete
+/// @return whether if the course has been deleted successfully or not
 bool delete_course_record(int course_id);
+
+/// @brief get the number of courses
+/// @return the number of courses
 int get_number_of_courses();
+
 struct Course* get_all_course_records();
 
 struct Programme{
@@ -131,11 +186,42 @@ struct Programme{
     int leader_id; /**< the id of the programme leader related to this record */
 };
 
-bool create_programme_record(char* course_name, char* lecturer_id);
-struct Programme read_programme_record(int course_id);
-bool update_programme_record(int programme_id);
+struct Programme* create_programme_object(int programme_id, char* programme_name, int leader_id);
+
+/// @brief checks whether if the programme exists or not
+/// @param programme_id programme of interest
+/// @return whether if the programme is in existence or not
+bool is_programme_exist(int programme_id);
+
+/// @brief create a specific record of a programme
+/// @param programme_name the name of 
+/// @param leader_id the user id of the leader 
+/// @return whether if the programme has been created successfully or not
+bool create_programme_record(char* programme_name, int leader_id);
+
+/// @brief read a specific programme record
+/// @param programme_id a specific programme of interest
+/// @return Programme that contains all the relevant information
+struct Programme* read_programme_record(int programme_id);
+
+/// @brief update the details of a specific programme
+/// @param programme_id a specific programme of interest
+/// @param programme_name the name of the specific programme
+/// @param leader_id the id of programme leader
+/// @return whether if the programme has been updated successfully or not
+bool update_programme_record(int programme_id, char* programme_name, int leader_id);
+
+/// @brief delete a specific programme from the database
+/// @param programme_id a specific programme of interest
+/// @return whether if the programme has been deleted successfully or not
 bool delete_programme_record(int programme_id);
+
+/// @brief get the number of programmme available
+/// @return the total amount of records inside PROGRAMME.txt file
 int get_number_of_programme();
+
+/// @brief get all available programme records
+/// @return array of struct Programme
 struct Programme* get_all_programme_records();
 
 #endif //SIMS_DATAMANAGER_H
