@@ -133,7 +133,7 @@ The compiler would do it by itself.<br>
 But in C we have to define the variable first and then use scanf to get the input and store it in the variable.<br>
 
 # Useage of the Funtions
-## Basic useage
+## Basic usage
 
 ### printf()
 As we know this is to show the user something, like greetings and such.
